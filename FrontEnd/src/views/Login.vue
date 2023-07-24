@@ -20,6 +20,13 @@
       </p>
     </div>
     <form class="mt-8 space-y-6" @submit="login">
+      <Alert v-if="Object.keys(errors).length" class="flex-col items-stretch text-sm">
+        <div v-for="(field, i) of Object.keys(errors)" :key="i">
+          <div v-for="(error, ind) of errors[field] || []" :key="ind">
+            * {{ error }}
+          </div>
+        </div>
+      </Alert>
       <Alert v-if="errorMsg">
         {{ errorMsg }}
         <span
@@ -145,7 +152,8 @@
   };
   let loading = ref(false);
   let errorMsg = ref("");
-  
+  const errors = ref({});
+
   function login(ev) {
     ev.preventDefault();
   
@@ -158,9 +166,15 @@
           name: "Dashboard",
         });
       })
-      .catch((err) => {
+      .catch((error) => {
         loading.value = false;
-        errorMsg.value = err.response.data.error;
+        if (error.response.status === 422) {
+          console.log(error)
+          errorMsg.value = error.response.data.message;
+        } else if (error.response.status === 401) {
+          console.log(error)
+          errorMsg.value = error.response.data.message;
+        }
       });
   }
   </script>
